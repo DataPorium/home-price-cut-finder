@@ -50,3 +50,25 @@ def test_main_pages_and_writes(tmp_path, monkeypatch, capsys):
 def test_needs_a_place():
     with pytest.raises(SystemExit):
         pc.main([])
+
+
+REAL = {"mode": "search", "total_matches": 33, "summary": {"count": 33},
+        "area_market": [{"level": "zip", "name": "92602", "for_sale": {"homes": 77}}],
+        "website_link": "https://dataporium.tech/real-estate?zip=92602",
+        "homes": [{"property_id": "9131968575", "address": "166 Villa Rdg, Irvine, CA 92602", "price": 2250000,
+                   "beds": 4, "total_cut": -640000, "total_cut_pct": -22.15,
+                   "nearby_2_miles": {"homes": 143, "median_price": 2238000}}],
+        "next_offset": None}
+
+
+def test_real_answer_shape(tmp_path, monkeypatch, capsys):
+    class Real:
+        def properties(self, **params):
+            return REAL
+    monkeypatch.setattr(pc, "DataPorium", lambda: Real())
+    out = tmp_path / "real.csv"
+    assert pc.main(["--zip", "92602", "--out", str(out)]) == 0
+    header = out.read_text().splitlines()[0].split(",")
+    assert header[:3] == ["address", "price", "total_cut"] and "nearby_2_miles_median_price" in header
+    printed = capsys.readouterr().out
+    assert "cut $640,000" in printed and "(33 match in all)" in printed
