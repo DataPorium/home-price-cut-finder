@@ -16,9 +16,10 @@ from pathlib import Path
 from dataporium import DataPorium
 
 # Columns shown first in the CSV when the answer has them; every other field follows.
-FIRST = ["address", "street", "city", "state", "zip", "price", "list_price", "beds", "baths", "sqft",
-         "price_per_sqft", "last_price_cut", "total_price_cut", "total_price_cut_pct", "listed_date",
-         "days_on_market", "true_days_on_market", "relisted", "property_id"]
+FIRST = ["address", "price", "total_cut", "total_cut_pct", "last_cut", "last_cut_pct", "last_cut_date",
+         "beds", "baths", "sqft", "price_per_sqft", "price_per_sqft_vs_zip_median_pct", "style", "year_built",
+         "listed_date", "days_on_market", "first_listed_date", "true_days_on_market", "relisted", "link",
+         "property_id"]
 PAGE = 200
 
 
@@ -130,7 +131,7 @@ def main(argv: list[str] | None = None) -> int:
     for row in rows[:10]:
         address = pick(row, "address", "street", "full_address") or row.get("property_id")
         price = pick(row, "price", "list_price")
-        cut = pick(row, "total_price_cut", "total_cut", "price_cut")
+        cut = pick(row, "total_cut", "total_price_cut", "price_cut")
         line = f"  {str(address)[:45]:45}"
         if isinstance(price, (int, float)):
             line += f"  ${price:>12,.0f}"
